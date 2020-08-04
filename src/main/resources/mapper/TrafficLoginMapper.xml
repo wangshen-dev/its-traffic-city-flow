@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="its.traffic.flow.mapper.TrafficLoginMapper">
+    <select id="findUserByName" parameterType="its.traffic.flow.entity.User" resultType="java.lang.Integer">
+        select count(1) from t_user where userName = #{userName}
+    </select>
+
+    <select id="findUserByIdAndPassword" parameterType="its.traffic.flow.entity.User" resultType="java.lang.Integer">
+        select count(1) from t_user where userName = #{userName} and userPwd = #{password}
+    </select>
+
+    <select id="findUserById" parameterType="its.traffic.flow.entity.User" resultType="java.lang.Integer">
+        select userId from t_user where userName = #{userName}
+    </select>
+
+    <select id="findRoleName" parameterType="java.lang.Integer" resultType="java.lang.String">
+    	SELECT
+		role.roleName
+	FROM
+		(
+			SELECT
+				*
+			FROM
+				t_user_role
+			WHERE
+				userId = #{userId}
+		) user1
+	JOIN (SELECT * FROM t_role) role ON user1.roleId = role.roleId
+    </select>
+
+    <select id="getPermissonList"  resultType="java.util.Map">
+        SELECT
+            role.roleId roleId,
+            user1.userName userName,
+            role.roleName roleName
+        FROM
+            (
+                SELECT
+                    userId,
+                    userName
+                FROM
+                    t_user
+            ) user1
+        LEFT JOIN (SELECT * FROM t_role) role ON user1.userId = role.roleId
+    </select>
+</mapper>

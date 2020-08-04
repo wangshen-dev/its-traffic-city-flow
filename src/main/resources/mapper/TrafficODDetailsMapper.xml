@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="its.traffic.flow.mapper.TrafficODDetailsMapper">
+
+
+    <!-- 获取交通小区详情 -->
+    <select id="getPlotsDetails"   resultType="its.traffic.flow.entity.PlotEntity">
+         SELECT
+            zone.tzId,
+            zone.tzAudit,
+            zone.tzName,
+            zone.tzCenterCoordinates,
+            zone.tzScope,
+            ot.otName
+        FROM
+            (
+                SELECT
+                    tzAudit,
+                    tzId,
+                    tzName,
+                    tzCenterCoordinates,
+                    tzScope,
+                    otId
+                FROM
+                    t_keen_its_traffic_zone
+                WHERE
+                    tzAudit = 1 and tzFlag = 1
+            ) zone
+         JOIN (
+            SELECT
+                otId,
+                otName
+            FROM
+                t_keen_its_od_type
+            WHERE
+                otAudit = 1 and otFlag = 1
+        ) ot ON zone.otId = ot.otId
+    </select>
+
+    <select id="getODtypeList"   resultType="its.traffic.flow.entity.ODTypeEntity">
+        SELECT * from t_keen_its_od_type where otFlag = 1 and otAudit = 1
+    </select>
+
+    <select id="getRoadsList"   parameterType="java.util.Map"  resultType="its.traffic.flow.entity.RoadEntity">
+        SELECT * from t_keen_its_road_install where stzId = #{stzId} and etzId = #{etzId}
+    </select>
+
+
+    <select id="getFlowData" parameterType="java.util.Map" resultType="its.traffic.flow.entity.FlowData">
+        SELECT
+        addrId,carId,substring(vsTime,12,5) as vsTime
+        FROM
+        ${table}
+        WHERE
+        vsTime BETWEEN #{startDate} AND #{endDate}
+        AND addrId IN
+        <foreach item="listAddrId" index="index" collection="listAddrIds" open="(" separator="," close=")">
+            #{listAddrId}
+        </foreach>
+
+    </select>
+
+</mapper>

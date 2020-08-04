@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="its.traffic.flow.mapper.TrafficBuiltMapper">
+
+
+    <!-- 根据oD名称 查询otId -->
+    <select id="queryOtId" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select otId from t_keen_its_od_type where otName = #{otName}
+    </select>
+
+	<!-- 根据oDId 查询otName -->
+	<select id="queryOtName" parameterType="java.lang.Integer" resultType="java.lang.String">
+        select otName from t_keen_its_od_type where otId = #{otId}
+    </select>
+
+
+<!--    &lt;!&ndash; 新增交通小区数据 &ndash;&gt;-->
+<!--    <insert id="insertPlot" parameterType="its.traffic.flow.entity.PlotEntity" useGeneratedKeys="true" keyProperty="tzId">-->
+<!--       insert into t_keen_its_traffic_zone(`otId`,`tzName`,`tzFlag`,`tzCenterCoordinates`,`tzScope`,`tzAudit`) values(#{otId},#{tzName},#{tzFlag},#{tzCenterCoordinates},#{tzScope},#{tzAudit})-->
+<!--    </insert>-->
+
+<!--    &lt;!&ndash; 新增交通小区数据 &ndash;&gt;-->
+<!--    <insert id="insertODType" parameterType="its.traffic.flow.entity.ODTypeEntity" useGeneratedKeys="true" keyProperty="otId">-->
+<!--         insert into t_keen_its_od_type(`otName`,`otAudit`) values(#{otName},#{otAudit})-->
+<!--   </insert>-->
+
+
+    <!-- 查询审核数据列表 -->
+    <select id="selectAuditPlotData"  resultType="java.util.Map">
+	  SELECT * from
+
+	(SELECT * from
+	(SELECT tzName,tzId FROM t_keen_its_traffic_zone WHERE tzAudit = 2 and tzFlag = 1)zone
+
+	 join
+
+	(SELECT cId,userId,cDes,cDataId,cContent FROM t_keen_its_change WHERE cType = 1)change1 on zone.tzId = change1.cDataId)table1
+
+	JOIN
+
+	(SELECT userId,userName FROM t_user)user1 ON table1.userId = user1.userId
+    </select>
+
+    <!-- 查询审核数据列表 -->
+    <select id="selectODTypeData"  resultType="java.util.Map">
+		   SELECT * from
+
+		(SELECT * from
+		(SELECT otName,otId FROM t_keen_its_od_type WHERE otAudit = 2 and otFlag = 1)odtype
+
+		 join
+
+		(SELECT cId,userId,cDes,cDataId,cContent FROM t_keen_its_change WHERE cType = 2)change1 on odtype.otId = change1.cDataId)table1
+
+		JOIN
+
+		(SELECT userId,userName FROM t_user)user1 ON table1.userId = user1.userId
+    </select>
+
+
+    <!-- 修改交通小区数据 -->
+    <update id="updatePlot" parameterType="java.util.Map">
+         update t_keen_its_traffic_zone
+         <set>
+            <if test="otId!=null">
+                otId = #{otId},
+            </if>
+             <if test="tzName!=null">
+                 tzName = #{tzName},
+             </if>
+             <if test="tzFlag!=null">
+                 tzFlag = #{tzFlag},
+             </if>
+             <if test="tzCenterCoordinates!=null">
+                 tzCenterCoordinates = #{tzCenterCoordinates},
+             </if>
+             <if test="tzScope!=null">
+                 tzScope = #{tzScope},
+             </if>
+			 <if test="tzAudit!=null">
+				 tzAudit = 1
+			 </if>
+         </set>
+          where tzId = #{tzId}
+   </update>
+
+	<!-- 修改OD类型 -->
+	<update id="updateODType" parameterType="java.util.Map" >
+		update t_keen_its_od_type
+		<set>
+			<if test="otName!=null">
+				otName = #{otName},
+			</if>
+			<if test="otFlag!=null">
+				otFlag = #{otFlag},
+			</if>
+			<if test="otAudit!=null">
+				otAudit = #{otAudit}
+			</if>
+		</set>
+		 where otId = #{otId}
+	</update>
+
+	<!-- 修改日志变更表 -->
+	<update id="updateChangeTable" parameterType="java.util.Map" >
+        update t_keen_its_change
+		<set>
+			cContent = #{cContent},cDateTime = #{cDateTime}
+		</set>
+		where cType = #{cType} and cDataId = #{cDataId} and cDes = #{cDes}
+    </update>
+
+
+	<!-- 查询变更表数据 -->
+	<select id="selectChange" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select userId  from t_keen_its_change where cType = #{cType} and cDataId = #{cDataId} and cDes = #{cDes}
+    </select>
+
+
+
+	<!-- 查询变更表用户 修改数据的id -->
+	<select id="selectChangUserId" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select userId  from t_keen_its_change where cType = #{cType} and cDataId = #{cDataId}
+    </select>
+
+	<!-- 查询变更表数据 cContent -->
+	<select id="selectChangeData_cContent" parameterType="java.util.Map" resultType="java.lang.String">
+        select cContent  from t_keen_its_change where cType = #{cType} and cDataId = #{cDataId} and cDes = #{cDes}
+    </select>
+
+	<!-- 查询该小区是否存在 -->
+	<select id="selectPlotIsExist" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(1) from t_keen_its_traffic_zone where tzName = #{tzName} and tzFlag = 1
+    </select>
+
+	<!-- 查询该小区Id -->
+	<select id="selectPlotTzId" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select tzId from t_keen_its_traffic_zone where tzName = #{tzName} and tzAudit = 1 and tzFlag = 1
+    </select>
+
+	<!-- 查询OD类型是否存在 -->
+	<select id="selectODtypeIsExist" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(1) from t_keen_its_od_type where otName = #{otName} and otFlag = 1
+    </select>
+
+	<!-- 查询OD类型Id -->
+	<select id="selectODtypeOtId" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select otId from t_keen_its_od_type where otName = #{otName}
+    </select>
+
+	<!-- 获取交通小区详情 -->
+	<select id="getPlotsDetails"  parameterType="java.util.Map" resultType="java.util.Map">
+    SELECT
+		zone.*, od.otName
+	FROM
+		(
+			SELECT
+				tzId,
+				tzName,
+				tzAudit,
+				otId,
+				tzCenterCoordinates,
+				tzScope
+			FROM
+				t_keen_its_traffic_zone where tzFlag = 1
+		<if test="tzId!=null">
+			and tzId = #{tzId}
+		</if>
+		) zone
+	LEFT JOIN (
+		SELECT
+			*
+		FROM
+			t_keen_its_od_type
+	) od ON zone.otId = od.otId
+		<if test="otName!=null">
+			WHERE od.otName = #{otName}
+		</if>
+    </select>
+
+
+	<!-- 获取OD类型列表 -->
+	<select id="getODTypeDetails"  resultType="java.util.Map">
+        SELECT * from t_keen_its_od_type where otFlag = 1
+    </select>
+
+
+	<!-- 根据id获取交通小区数据 -->
+	<select id="idGetZoneDetails"  parameterType="java.lang.Integer" resultType="java.util.Map">
+    	SELECT * from t_keen_its_traffic_zone where tzId = #{tzId}
+    </select>
+
+
+
+</mapper>

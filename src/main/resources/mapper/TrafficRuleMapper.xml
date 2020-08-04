@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="its.traffic.flow.mapper.TrafficRuleMapper">
+
+
+    <!-- 根据小区名 获取小区下所有的地点Id -->
+    <select id="getTzNameAsAddress" parameterType="java.lang.String" resultType="java.lang.Integer">
+    	SELECT
+		addr.addrId
+	FROM
+		(
+			SELECT
+				tzId
+			FROM
+				t_keen_its_traffic_zone
+			WHERE
+				tzName = #{tzName}
+		) tz
+	LEFT JOIN (
+		SELECT
+			*
+		FROM
+			t_keen_its_zone_address
+	) addr ON tz.tzId = addr.tzId
+    </select>
+
+
+
+    <select id="getaddrIDAsTzNameAndTzId"  resultType="java.util.Map">
+	SELECT
+		tz.tzId,tz.tzName,addr.addrId
+	FROM
+		(
+			SELECT
+				tzId,tzName
+			FROM
+				t_keen_its_traffic_zone where tzAudit = 1 and tzFlag = 1
+		) tz
+	 JOIN (
+		SELECT
+			*
+		FROM
+			t_keen_its_zone_address
+	) addr ON tz.tzId = addr.tzId
+    </select>
+
+
+    <!-- 道路id 名称-->
+    <select id="getAddrIDAsAddrName"     resultType="java.util.Map">
+          SELECT  addrId,addrName    FROM    t_keen_its_address
+    </select>
+
+    <!-- 道路详情-->
+    <select id="getAddrDetails"     resultType="java.util.Map">
+          SELECT  addrId,addrName,addrLon,addrLat,regional    FROM    t_keen_its_address  where addrLat != '' and addrLon != ''
+    </select>
+
+    <!-- 小区详情-->
+    <select id="getZoneDetails"     resultType="java.util.Map">
+        SELECT  tzId,tzName,tzCenterCoordinates,tzScope    FROM    t_keen_its_traffic_zone WHERE tzAudit = 1 and tzFlag = 1
+    </select>
+
+    <!-- 根据小区、od类型 得到地点id-->
+    <select id="isZoneASODTypeGetAddrID"  parameterType="java.util.Map"   resultType="java.lang.Integer">
+		SELECT addr.addrId FROM
+		( SELECT od2.tzId FROM
+		(
+			SELECT
+			otId
+			FROM
+			t_keen_its_od_type WHERE otAudit = 1 and otFlag = 1
+			<if test="otName!=null">
+				and otName = #{otName}
+			</if>
+		) od1
+		LEFT JOIN (
+		SELECT
+		tzid,
+		otId
+		FROM
+		t_keen_its_traffic_zone
+		WHERE tzAudit = 1 and tzFlag = 1
+		<if test="tzName2!=null">
+			and tzName != #{tzName2}
+		</if>
+		<if test="tzName!=null">
+			and tzName = #{tzName}
+		</if>
+		) od2 ON od1.otId = od2.otid
+		) zone
+		 JOIN (
+		SELECT
+		*
+		FROM
+		t_keen_its_zone_address
+		) addr ON zone.tzId = addr.tzId
+    </select>
+
+
+	<!-- 道路id 经纬度-->
+	<select id="getAddrIDAsAddrLatLon"     resultType="java.util.Map">
+          SELECT  addrId,addrLat,addrLon    FROM   t_keen_its_address where addrLat != '' and addrLon != ''
+    </select>
+
+	<!-- 车辆类型-->
+	<select id="getCarTypeList"     resultType="java.util.Map">
+          SELECT  `carId`,`type`    FROM   t_keen_its_car_type
+    </select>
+
+	<!-- 通勤车id -->
+	<select id="getCommCarList"  parameterType="java.util.Map"   resultType="java.lang.Integer">
+         SELECT cdCarId from t_keen_its_commuting_data where tzsId = #{tzsId} and tzeId = #{tzeId} AND type = 1
+    </select>
+
+
+	<!-- 通勤车id -->
+	<select id="getAllCommCarList"     resultType="java.lang.Integer">
+         SELECT count(1) from t_keen_its_commuting_data where  type = 1
+    </select>
+
+	<!-- 查找 车牌号-->
+	<select id="getCarNumber" parameterType="java.util.Map" resultType="String">
+		SELECT
+		carNumber
+		FROM
+		${table}
+		WHERE
+		<if test="carIds!=null">
+			carId IN
+			<foreach item="carId" index="index" collection="carIds" open="(" separator="," close=")">
+				#{carId}
+			</foreach>
+		</if>
+	</select>
+
+	<!-- 获取道路长度 -->
+	<select id="getRoadLengths"   parameterType="java.util.Map"  resultType="java.lang.Double">
+         SELECT sum(roadLength) from t_keen_its_road_install where stzId = #{stzId} and etzId = #{etzId}
+    </select>
+
+
+	<!-- 获取天气数据-->
+	<select id="getWeatherData" parameterType="java.lang.String" resultType="java.util.Map">
+         SELECT wId id,wDate `date`,wTemLow lowTemp,wTemHigh highTemp,wWindDirection windDire,wWindLevel windLevel,wWeather weather from t_keen_its_weather where wDate = #{wDate}
+    </select>
+</mapper>

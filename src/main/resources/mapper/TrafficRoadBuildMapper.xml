@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="its.traffic.flow.mapper.TrafficRoadBuiltMapper">
+
+    <select id="seleteRoadDetails" parameterType="java.lang.Integer" resultType="its.traffic.flow.entity.RoadEntity">
+        select * from t_keen_its_road_install where roadId = #{roadId}
+    </select>
+
+
+    <select id="seletePlotName" parameterType="java.lang.Integer" resultType="java.lang.String">
+        select tzName from t_keen_its_traffic_zone where tzId = #{tzId}
+    </select>
+
+    <select id="seletePlotId" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select tzId from t_keen_its_traffic_zone where tzName = #{tzName}
+    </select>
+
+<!--    <select id="seleteRoadList"   resultType="java.util.Map">-->
+<!--        select roadId,stzId,etzId,roadName,roadLocaltion,diffusionLocation,roadDescribe from t_keen_its_road_install-->
+<!--    </select>-->
+
+    <select id="seleteRoadList"  resultType="its.traffic.flow.entity.RoadEntity">
+        select roadId,stzId,etzId,roadName,roadLocaltion,diffusionLocation,roadDescribe from t_keen_its_road_install
+    </select>
+
+    <select id="seleteRoadDetails2"  parameterType="its.traffic.flow.entity.RoadEntity" resultType="its.traffic.flow.entity.RoadEntity">
+        select * from t_keen_its_road_install where stzId = #{stzId} and etzId = #{etzId}
+    </select>
+
+    <select id="seleteZoneList"  resultType="its.traffic.flow.entity.PlotEntity">
+        select tzId,tzName from t_keen_its_traffic_zone where tzFlag = 1 and tzAudit = 1
+    </select>
+
+    <!-- 修改道路表 -->
+    <update id="updateRoadDetails" parameterType="java.util.Map" >
+        update t_keen_its_road_install
+        <set>
+            <if test="stzId!=null">
+                stzId = #{stzId},
+            </if>
+            <if test="etzId!=null">
+                etzId = #{etzId},
+            </if>
+            <if test="roadName!=null">
+                roadName = #{roadName},
+            </if>
+            <if test="roadLocaltion!=null">
+                roadLocaltion = #{roadLocaltion},
+            </if>
+            <if test="diffusionLocation!=null">
+                diffusionLocation = #{diffusionLocation}
+            </if>
+        </set>
+        where  roadId = #{roadId}
+    </update>
+
+
+</mapper>

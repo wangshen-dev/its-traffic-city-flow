@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="its.traffic.flow.mapper.TrafficGetFlowDataMapper">
+
+
+    <select id="getFlowData" parameterType="java.util.Map" resultType="its.traffic.flow.entity.FlowData">
+        SELECT
+            addrId,carId,substring(vsTime,12,5) as vsTime
+        FROM
+            ${table}
+        WHERE
+         vsDate = #{vsDate} and vsTime BETWEEN #{startDate} AND #{endDate}   AND addrId =  #{addrId}
+    </select>
+
+    <select id="getCarId" parameterType="java.util.Map" resultType="java.lang.String">
+        SELECT
+        DISTINCT(carId)
+        FROM
+        ${table}
+        WHERE
+        vsTime BETWEEN #{startDate} AND #{endDate}
+        <if test="listAddrs!=null">
+            AND addrId IN
+            <foreach item="listAddr" index="index" collection="listAddrs" open="(" separator="," close=")">
+                #{listAddr}
+            </foreach>
+        </if>
+    </select>
+
+</mapper>
